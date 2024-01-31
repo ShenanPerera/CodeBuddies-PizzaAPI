@@ -1,0 +1,6 @@
+@CodeBuddies_PizzaAPI_HostAddress = http://localhost:5263
+
+GET {{CodeBuddies_PizzaAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
