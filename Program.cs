@@ -1,5 +1,6 @@
 
 using CodeBuddies_PizzaAPI.Data;
+using CodeBuddies_PizzaAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodeBuddies_PizzaAPI
@@ -14,6 +15,9 @@ namespace CodeBuddies_PizzaAPI
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            builder.Services.AddScoped<IOrderServices , OrderService>();
+
 
             // Add services to the container.
             builder.Services.AddControllers();
