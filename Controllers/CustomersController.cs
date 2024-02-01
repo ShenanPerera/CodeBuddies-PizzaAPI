@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CodeBuddies_PizzaAPI.Data;
 using CodeBuddies_PizzaAPI.Models;
 using CodeBuddies_PizzaAPI.DTOs;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CodeBuddies_PizzaAPI.Controllers
 {
@@ -22,109 +23,125 @@ namespace CodeBuddies_PizzaAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Customers
-        [HttpGet]
+		// POST: api/Customers
+		[HttpPost]
+		public async Task<ActionResult<Customer>> PostCustomer(CraeteCustomerRequest customer)
+		{
+			try
+			{
+				if (_context.Customers.Any(a => a.Email == customer.Email))
+				{
+					return BadRequest("Customer already exists in the database");
+				}
+
+				var newCustomer = new Customer
+				{
+					Email = customer.Email,
+					FirstName = customer.FirstName,
+					LastName = customer.LastName,
+					Address = customer.Address,
+					Phone = customer.Phone,
+				};
+
+				_context.Customers.Add(newCustomer);
+				await _context.SaveChangesAsync();
+
+				// Return the newly created customer
+				return CreatedAtAction("GetCustomer", new { id = newCustomer.Email }, newCustomer);
+			}
+			catch (DbUpdateConcurrencyException e)
+			{
+				return BadRequest(e.Message);
+			}
+		}
+
+		// GET: api/Customers
+		[HttpGet]
         public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
-            return await _context.Customers.ToListAsync();
-        }
+			var customers = await _context.Customers.ToListAsync();
 
-        // GET: api/Customers/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Customer>> GetCustomer(string id)
-        {
-            var customer = await _context.Customers.FindAsync(id);
-
-            if (customer == null)
+            if (!customers.Any())
             {
-                return NotFound();
+                return NotFound("No customers found in the database");
             }
 
+			return customers;
+		}
+
+        // GET: api/Customers/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Customer>> GetCustomer(int id )
+        {
+			var customer = await _context.Customers.FirstOrDefaultAsync(a => a.Id == id);
+
+			if (customer == null)
+            {
+                return NotFound("Customer not found");
+            }
             return customer;
         }
 
-        // PUT: api/Customers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(string id, Customer customer)
+
+		// PUT: api/Customers/5
+		[HttpPut("{id}")]
+        public async Task<IActionResult> PutCustomer(int id, UpdateCustomer customerUpdateModel)
         {
-            if (id != customer.Email)
+            if (id != customerUpdateModel.Id)
             {
-                return BadRequest();
+                return BadRequest("The provided ID does not match the customer ID in the request body");
             }
 
-            _context.Entry(customer).State = EntityState.Modified;
+            var existingCustomer = await _context.Customers.FindAsync(id);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+			if (existingCustomer == null)
+			{
+				return NotFound($"Customer with id: {id} does not exist in the database");
+			}
 
-            return NoContent();
-        }
+			if (_context.Customers.Any(c => c.Id != id && c.Email == customerUpdateModel.Email))
+			{
+				return BadRequest("The provided email already exists in another customer record");
+			}
 
-        // POST: api/Customers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Customer>> PostCustomer(CraeteCustomerRequest customer)
-        {
-            var user = new Customer {
-                Email = customer.Email,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName,
-                Address = customer.Address,
-                Phone = customer.Phone,
-            };
-            _context.Customers.Add(user);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (CustomerExists(customer.Email))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+			existingCustomer.Email= customerUpdateModel.Email;
+			existingCustomer.FirstName = customerUpdateModel.FirstName;
+            existingCustomer.LastName = customerUpdateModel.LastName;
+            existingCustomer.Phone = customerUpdateModel.Phone;
+			existingCustomer.Address = customerUpdateModel.Address;
 
-            return CreatedAtAction("GetCustomer", new { id = customer.Email }, customer);
-        }
+			try
+			{
+				await _context.SaveChangesAsync();
+				return Ok(existingCustomer);
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!_context.Customers.Any(a => a.Id == id))
+				{
+					return NotFound($"Customer with id: {id} does not exist in the database");
+				}
+				else
+				{
+					throw;
+				}
+			}
 
-        // DELETE: api/Customers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer(string id)
+			return NoContent();
+		}
+
+		// DELETE: api/Customers/5
+		[HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null)
             {
-                return NotFound();
+                return NotFound("Customer not found");
             }
-
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool CustomerExists(string id)
-        {
-            return _context.Customers.Any(e => e.Email == id);
-        }
+			return Ok("Customer is removed successfully");
+		}
     }
 }

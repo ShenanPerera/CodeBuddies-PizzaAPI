@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeBuddies_PizzaAPI.DTOs
 {
-    public class CraeteCustomerRequest
+	public class CraeteCustomerRequest
     {
 
         [Required]
