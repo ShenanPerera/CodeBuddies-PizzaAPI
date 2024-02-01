@@ -1,5 +1,6 @@
 
 using CodeBuddies_PizzaAPI.Data;
+using CodeBuddies_PizzaAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodeBuddies_PizzaAPI
@@ -17,8 +18,9 @@ namespace CodeBuddies_PizzaAPI
 
             // Add services to the container.
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
+			builder.Services.AddScoped<ICustomerService, CustomerService>();
+			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+			builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
