@@ -10,8 +10,10 @@ namespace CodeBuddies_PizzaAPI.Models
         public DateTime OrderFullFilled { get; set; }
 
         public bool OnPreparation { get; set; }
-        public Customer Customer { get; set; } = null!;
-        public ICollection<OrderDetail> OrderDetails { get; set; } = null!;
+        public Customer Customer { get; set; }
+
+        //TODO: until Order detail lists are ready . 
+        //public ICollection<OrderDetail> OrderDetails { get; set; }
 
     }
 }
