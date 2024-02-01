@@ -25,7 +25,7 @@ namespace CodeBuddies_PizzaAPI.Controllers
 
 		// POST: api/Customers
 		[HttpPost]
-		public async Task<ActionResult<Customer>> PostCustomer(CraeteCustomerRequest customer)
+		public async Task<ActionResult<Customer>> PostCustomer(CreateCustomerRequest customer)
 		{
 			try
 			{
