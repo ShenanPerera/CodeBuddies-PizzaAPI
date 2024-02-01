@@ -34,7 +34,7 @@ namespace CodeBuddies_PizzaAPI.DTOs
 
 	}
 
-	public class UpdateCustomerLastLastRequest
+	public class UpdateCustomerLastNameRequest
 	{
 		[Required]
 		public int Id { get; set; }
