@@ -4,8 +4,8 @@ namespace CodeBuddies_PizzaAPI.Models
 {
     public class Customer
     {
-        [Key]
-        public string? Email { get; set; }
+        public int Id { get; set; }
+        public string Email { get; set; }
         public string FirstName { get; set; } = null!;
 
         public string LastName { get; set; } = null!;
