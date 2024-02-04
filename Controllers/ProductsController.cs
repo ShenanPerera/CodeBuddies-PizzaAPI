@@ -1,157 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CodeBuddies_PizzaAPI.Data;
 using CodeBuddies_PizzaAPI.Models;
+using CodeBuddies_PizzaAPI.Services;
 
 namespace CodeBuddies_PizzaAPI.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class ProductsController : Controller
     {
-        private readonly PizzaContext _context;
-
-        public ProductsController(PizzaContext context)
+        readonly private IProductService _productService;
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Products.ToListAsync());
-        }
-
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
-        }
-
-        // GET: Products/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: api/Products
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price")] Product product)
+        public async Task<ActionResult<Product>> PostProduct(Product product)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var newProduct = await _productService.AddProductAsync(product);
+                return CreatedAtAction("GetProduct", new { id = newProduct.Id }, newProduct);
             }
-            return View(product);
+            catch (DbUpdateConcurrencyException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
-        // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: api/Products
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            if (id == null)
+            IEnumerable<Product> products = await _productService.GetAllProductsAsync();
+            if (!products.Any())
             {
-                return NotFound();
+                return NotFound("No products found in the database");
             }
+            return Ok(products);
+        }
 
-            var product = await _context.Products.FindAsync(id);
+        // GET: api/Products/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetPRoduct(int id)
+        {
+            var product = await _productService.GetProductByIdAsync(id);
             if (product == null)
             {
-                return NotFound();
+                return NotFound("Product not found");
             }
-            return View(product);
+            return Ok(product);
         }
 
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price")] Product product)
+        // PUT: api/Products/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutProduct(int id, Product product)
         {
-            if (id != product.Id)
+            var updatedProduct = await _productService.UpdateProductAsync(id, product);
+            if (updatedProduct == null)
             {
-                return NotFound();
+                return NotFound($"Product with id: {id} does not exist in the database");
             }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(product);
+            return Ok(updatedProduct);
         }
 
-        // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // DELETE: api/Products/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            if (id == null)
+            var result = await _productService.DeleteProductAsync(id);
+            if (!result)
             {
-                return NotFound();
+                return NotFound("Product not found");
             }
-
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
-        }
-
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.Id == id);
+            return Ok("Product is removed successfully");
         }
     }
 }
+
