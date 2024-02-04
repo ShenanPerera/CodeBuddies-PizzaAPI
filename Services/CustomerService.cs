@@ -10,7 +10,7 @@ namespace CodeBuddies_PizzaAPI.Services
 {
 	public interface ICustomerService
 	{
-		Task<Customer> AddCustomerAsync(CraeteCustomerRequest customer);
+		Task<Customer> AddCustomerAsync(CreateCustomerRequest customer);
 		Task<IEnumerable<Customer>> GetAllCustomersAsync();
 		Task<Customer> GetCustomerByIdAsync(int id);
 		Task<Customer> UpdateCustomerAsync(int id, UpdateCustomerRequest customer);
@@ -31,7 +31,7 @@ namespace CodeBuddies_PizzaAPI.Services
 			_context = context;
 		}
 
-		public async Task<Customer> AddCustomerAsync(CraeteCustomerRequest customer)
+		public async Task<Customer> AddCustomerAsync(CreateCustomerRequest customer)
 		{
 			if (await _context.Customers.AnyAsync(a => a.Email == customer.Email))
 			{
