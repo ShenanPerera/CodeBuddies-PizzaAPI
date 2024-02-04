@@ -18,6 +18,7 @@ namespace CodeBuddies_PizzaAPI
 
             builder.Services.AddScoped<IOrderServices , OrderService>();
 
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             // Add services to the container.
             builder.Services.AddControllers();
