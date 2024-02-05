@@ -12,10 +12,12 @@ namespace CodeBuddies_PizzaAPI.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderServices _orderServices;
+        private readonly ICustomerService _customerService;
 
-        public OrderController(IOrderServices orderServices) 
+        public OrderController(IOrderServices orderServices , ICustomerService customerService) 
         {
             _orderServices = orderServices;
+            _customerService = customerService;
         }
 
         //POST: api/Orders
@@ -37,7 +39,12 @@ namespace CodeBuddies_PizzaAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
-            var order = await _orderServices.GetOrderByIdAsync(id); 
+            var order = await _orderServices.GetOrderByIdAsync(id);
+
+            if (order.Customer == null)
+            {
+                return NotFound();
+            }
 
             if(order == null)
             {
