@@ -47,12 +47,12 @@ namespace CodeBuddies_PizzaAPI.Services
 
         public async Task<Order> GetOrderByIdAsync(int orderId)
         {
-            return await _context.Orders.FindAsync(orderId);
+            return await _context.Orders.Include(o => o.Customer).FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            return await _context.Orders.ToListAsync();
+            return await _context.Orders.Include(o=> o.Customer).ToListAsync();
         }
     }
 }
