@@ -10,19 +10,16 @@ namespace CodeBuddies_PizzaAPI.Services
 {
 	public interface ICustomerService
 	{
-		Task<Customer> AddCustomerAsync(CraeteCustomerRequest customer);
+		Task<Customer> AddCustomerAsync(CreateCustomerRequest customer);
 		Task<IEnumerable<Customer>> GetAllCustomersAsync();
 		Task<Customer> GetCustomerByIdAsync(int id);
 		Task<Customer> UpdateCustomerAsync(int id, UpdateCustomerRequest customer);
-		Task<Customer> UpdateCustomerEmailAsync(int id, UpdateCustomerEmailRequest customer);
-		Task<Customer> UpdateCustomerFirstNameAsync(int id, UpdateCustomerFirstNameRequest updateCustomerFirstNameRequest);
-		Task<Customer> UpdateCustomerLastNameAsync(int id, UpdateCustomerLastNameRequest updateCustomerLastNameRequest);
-		Task<Customer> UpdateCustomerAddressAsync(int id, UpdateCustomerAddressRequest updateCustomerAddressRequest);
-		Task<Customer> UpdateCustomerPhoneAsync(int id, UpdateCustomerPhoneRequest updateCustomerPhoneRequest);
-		Task<bool> DeleteCustomerAsync(int id);
-	}
+        Task<bool> DeleteCustomerAsync(int id);
+        Task<Customer> PatchCustomerAsync(PatchCustomerRequest patchRequest);
+        Task<Customer> UpdateCustomerEmailAsync(int id, UpdateCustomerEmailRequest customer);
+    }
 
-	public class CustomerService : ICustomerService
+    public class CustomerService : ICustomerService
 	{
 		private readonly PizzaContext _context;
 
@@ -31,7 +28,7 @@ namespace CodeBuddies_PizzaAPI.Services
 			_context = context;
 		}
 
-		public async Task<Customer> AddCustomerAsync(CraeteCustomerRequest customer)
+		public async Task<Customer> AddCustomerAsync(CreateCustomerRequest customer)
 		{
 			if (await _context.Customers.AnyAsync(a => a.Email == customer.Email))
 			{
@@ -121,175 +118,102 @@ namespace CodeBuddies_PizzaAPI.Services
 			return true;
 		}
 
-		public async Task<Customer> UpdateCustomerEmailAsync(int id, UpdateCustomerEmailRequest customer)
-		{
-			if (id != customer.Id)
-			{
-				throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
-			}
+        public async Task<Customer> PatchCustomerAsync(PatchCustomerRequest patchRequest)
+        {
+            var existingCustomer = await _context.Customers.FindAsync(patchRequest.Id);
 
-			var existingCustomer = await _context.Customers.FindAsync(id);
+            if (existingCustomer == null)
+            {
+                throw new KeyNotFoundException($"Customer with id: {patchRequest.Id} does not exist in the database.");
+            }
 
-			if (existingCustomer == null)
-			{
-				throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-			}
+            // Apply partial updates
+            if (!string.IsNullOrEmpty(patchRequest.Email))
+            {
+                if (await _context.Customers.AnyAsync(c => c.Id != patchRequest.Id && c.Email == patchRequest.Email))
+                {
+                    throw new DbUpdateException("The provided email already exists in another customer record.");
+                }
+                existingCustomer.Email = patchRequest.Email;
+            }
 
-			if (await _context.Customers.AnyAsync(c => c.Id != id && c.Email == customer.Email))
-			{
-				throw new DbUpdateException("The provided email already exists in another customer record.");
-			}
+            if (!string.IsNullOrEmpty(patchRequest.FirstName))
+            {
+                existingCustomer.FirstName = patchRequest.FirstName;
+            }
 
-			existingCustomer.Email = customer.Email;
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await _context.Customers.AnyAsync(a => a.Id == id))
-				{
-					throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-				}
-				else
-				{
-					throw;
-				}
-			}
+            if (!string.IsNullOrEmpty(patchRequest.LastName))
+            {
+                existingCustomer.LastName = patchRequest.LastName;
+            }
 
-			return existingCustomer;
-		}
+            if (!string.IsNullOrEmpty(patchRequest.Phone))
+            {
+                existingCustomer.Phone = patchRequest.Phone;
+            }
 
-		public async Task<Customer> UpdateCustomerFirstNameAsync(int id, UpdateCustomerFirstNameRequest customer)
-		{
-			if (id != customer.Id)
-			{
-				throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
-			}
+            if (!string.IsNullOrEmpty(patchRequest.Address))
+            {
+                existingCustomer.Address = patchRequest.Address;
+            }
 
-			var existingCustomer = await _context.Customers.FindAsync(id);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.Customers.AnyAsync(a => a.Id == patchRequest.Id))
+                {
+                    throw new KeyNotFoundException($"Customer with id: {patchRequest.Id} does not exist in the database.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-			if (existingCustomer == null)
-			{
-				throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-			}
+            return existingCustomer;
+        }
 
-			existingCustomer.FirstName = customer.FirstName;
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await _context.Customers.AnyAsync(a => a.Id == id))
-				{
-					throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-				}
-				else
-				{
-					throw;
-				}
-			}
-			return existingCustomer;
-		}
+        public async Task<Customer> UpdateCustomerEmailAsync(int id, UpdateCustomerEmailRequest customer)
+        {
+            if (id != customer.Id)
+            {
+                throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
+            }
 
-		public async Task<Customer> UpdateCustomerLastNameAsync(int id, UpdateCustomerLastNameRequest customer)
-		{
-			if (id != customer.Id)
-			{
-				throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
-			}
+            var existingCustomer = await _context.Customers.FindAsync(id);
 
-			var existingCustomer = await _context.Customers.FindAsync(id);
+            if (existingCustomer == null)
+            {
+                throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
+            }
 
-			if (existingCustomer == null)
-			{
-				throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-			}
+            if (await _context.Customers.AnyAsync(c => c.Id != id && c.Email == customer.Email))
+            {
+                throw new DbUpdateException("The provided email already exists in another customer record.");
+            }
 
-			existingCustomer.LastName = customer.LastName;
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await _context.Customers.AnyAsync(a => a.Id == id))
-				{
-					throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-				}
-				else
-				{
-					throw;
-				}
-			}
-			return existingCustomer;
-		}
+            existingCustomer.Email = customer.Email;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.Customers.AnyAsync(a => a.Id == id))
+                {
+                    throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-		public async Task<Customer> UpdateCustomerAddressAsync(int id, UpdateCustomerAddressRequest customer)
-		{
-			if (id != customer.Id)
-			{
-				throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
-			}
+            return existingCustomer;
+        }
 
-			var existingCustomer = await _context.Customers.FindAsync(id);
-
-			if (existingCustomer == null)
-			{
-				throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-			}
-
-			existingCustomer.Address = customer.Address;
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await _context.Customers.AnyAsync(a => a.Id == id))
-				{
-					throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-				}
-				else
-				{
-					throw;
-				}
-			}
-			return existingCustomer;
-		}
-
-		public async Task<Customer> UpdateCustomerPhoneAsync(int id, UpdateCustomerPhoneRequest customer)
-		{
-			if (id != customer.Id)
-			{
-				throw new ArgumentException("The provided ID does not match the customer ID in the request body.");
-			}
-
-			var existingCustomer = await _context.Customers.FindAsync(id);
-
-			if (existingCustomer == null)
-			{
-				throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-			}
-
-			existingCustomer.Phone = customer.Phone;
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!await _context.Customers.AnyAsync(a => a.Id == id))
-				{
-					throw new KeyNotFoundException($"Customer with id: {id} does not exist in the database.");
-				}
-				else
-				{
-					throw;
-				}
-			}
-			return existingCustomer;
-		}
-	}
+    }
 }

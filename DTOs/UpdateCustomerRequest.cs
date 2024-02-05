@@ -25,36 +25,4 @@ namespace CodeBuddies_PizzaAPI.DTOs
 		[Required]
 		public string Email { get; set; }
 	}
-	public class UpdateCustomerFirstNameRequest
-	{
-		[Required]
-		public int Id { get; set; }
-		[Required]
-		public string FirstName { get; set; }
-
-	}
-
-	public class UpdateCustomerLastNameRequest
-	{
-		[Required]
-		public int Id { get; set; }
-		[Required]
-		public string LastName { get; set; }
-	}
-
-	public class UpdateCustomerPhoneRequest
-	{
-		[Required]
-		public int Id { get; set; }
-		[Required]
-		public string Phone { get; set; }
-	}
-
-	public class UpdateCustomerAddressRequest
-	{
-		[Required]
-		public int Id { get; set; }
-		[Required]
-		public string Address { get; set; }
-	}
 }

@@ -20,7 +20,7 @@ namespace CodeBuddies_PizzaAPI.Controllers
 
 		// POST: api/Customers
 		[HttpPost]
-		public async Task<ActionResult<Customer>> PostCustomer(CraeteCustomerRequest customer)
+		public async Task<ActionResult<Customer>> PostCustomer(CreateCustomerRequest customer)
 		{
 			try
 			{
@@ -81,7 +81,7 @@ namespace CodeBuddies_PizzaAPI.Controllers
 			return Ok(updatedCustomer);
 		}
 
-		// PUT: api/Customers/email/5
+		//// PUT: api/Customers/email/5
 		[HttpPut("email/{id}")]
 		public async Task<IActionResult> PutCustomerEmail(int id, UpdateCustomerEmailRequest customer)
 		{
@@ -93,52 +93,32 @@ namespace CodeBuddies_PizzaAPI.Controllers
 			return Ok(updatedCustomer);
 		}
 
-		// PUT: api/Customers/first-name/5
-		[HttpPut("first-name/{id}")]
-		public async Task<IActionResult> PutCustomerFirstName(int id, UpdateCustomerFirstNameRequest customer)
-		{
-			var updatedCustomer = await _customerService.UpdateCustomerFirstNameAsync(id, customer);
-			if (updatedCustomer == null)
-			{
-				return NotFound($"Customer with id: {id} does not exist in the database");
-			}
-			return Ok(updatedCustomer);
-		}
+		// PATCH: api/Customers/5
+		[HttpPatch("{id}")]
+        public async Task<IActionResult> PatchCustomer(int id, [FromBody] PatchCustomerRequest patchRequest)
+        {
+            try
+            {
+                // You might want to set the id in the patchRequest before passing it to the service.
+                patchRequest.Id = id;
 
-		// PUT: api/Customers/last-name/5
-		[HttpPut("last-name/{id}")]
-		public async Task<IActionResult> PutCustomerLastName(int id, UpdateCustomerLastNameRequest customer)
-		{
-			var updatedCustomer = await _customerService.UpdateCustomerLastNameAsync(id, customer);
-			if (updatedCustomer == null)
-			{
-				return NotFound($"Customer with id: {id} does not exist in the database");
-			}
-			return Ok(updatedCustomer);
-		}
+                var patchedCustomer = await _customerService.PatchCustomerAsync(patchRequest);
+                return Ok(patchedCustomer);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
 
-		// PUT: api/Customers/first-name/5
-		[HttpPut("address/{id}")]
-		public async Task<IActionResult> PutCustomerAddress(int id, UpdateCustomerAddressRequest customer)
-		{
-			var updatedCustomer = await _customerService.UpdateCustomerAddressAsync(id, customer);
-			if (updatedCustomer == null)
-			{
-				return NotFound($"Customer with id: {id} does not exist in the database");
-			}
-			return Ok(updatedCustomer);
-		}
 
-		// PUT: api/Customers/first-name/5
-		[HttpPut("phone/{id}")]
-		public async Task<IActionResult> PutCustomerPhone(int id, UpdateCustomerPhoneRequest customer)
-		{
-			var updatedCustomer = await _customerService.UpdateCustomerPhoneAsync(id, customer);
-			if (updatedCustomer == null)
-			{
-				return NotFound($"Customer with id: {id} does not exist in the database");
-			}
-			return Ok(updatedCustomer);
-		}
-	}
+    }
 }
