@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using CodeBuddies_PizzaAPI.Models;
 using CodeBuddies_PizzaAPI.Services;
+using CodeBuddies_PizzaAPI.DTOs;
 
 namespace CodeBuddies_PizzaAPI.Controllers
 {
@@ -17,7 +18,7 @@ namespace CodeBuddies_PizzaAPI.Controllers
 
         // POST: api/Products
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<ProductResponseDTO>> PostProduct(ProductRequest product)
         {
             try
             {
@@ -32,9 +33,9 @@ namespace CodeBuddies_PizzaAPI.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ProductResponseDTO>>> GetProducts()
         {
-            IEnumerable<Product> products = await _productService.GetAllProductsAsync();
+            IEnumerable<ProductResponseDTO> products = await _productService.GetAllProductsAsync();
             if (!products.Any())
             {
                 return NotFound("No products found in the database");
@@ -44,7 +45,7 @@ namespace CodeBuddies_PizzaAPI.Controllers
 
         // GET: api/Products/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetPRoduct(int id)
+        public async Task<ActionResult<ProductResponseDTO>> GetPRoduct(int id)
         {
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null)
@@ -54,9 +55,11 @@ namespace CodeBuddies_PizzaAPI.Controllers
             return Ok(product);
         }
 
+
+
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutProduct(int id, ProductRequest product)
         {
             var updatedProduct = await _productService.UpdateProductAsync(id, product);
             if (updatedProduct == null)
@@ -64,7 +67,10 @@ namespace CodeBuddies_PizzaAPI.Controllers
                 return NotFound($"Product with id: {id} does not exist in the database");
             }
             return Ok(updatedProduct);
+
         }
+
+
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
