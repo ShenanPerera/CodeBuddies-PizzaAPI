@@ -16,9 +16,13 @@ namespace CodeBuddies_PizzaAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
+
             builder.Services.AddScoped<IOrderServices , OrderService>();
 
-            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ITestOrderDetailServices, TestOrderDetailServices>();
 
             // Add services to the container.
             builder.Services.AddControllers();

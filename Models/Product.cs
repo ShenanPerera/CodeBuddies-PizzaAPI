@@ -11,5 +11,10 @@ namespace CodeBuddies_PizzaAPI.Models
 
         [Column(TypeName = " decimal(10,2)")]
         public decimal Price { get; set; }
+
+        public static implicit operator Product(Order v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -10,6 +10,6 @@ namespace CodeBuddies_PizzaAPI.DTOs
         public DateTime orderFullFilled { get; set; }
 
         public bool OnPreparation { get; set; }
-        public Customer CustomerId { get; set; }
+        public int CustomerId { get; set; }
     }
 }
