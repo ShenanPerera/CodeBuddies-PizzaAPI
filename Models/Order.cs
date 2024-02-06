@@ -12,8 +12,10 @@ namespace CodeBuddies_PizzaAPI.Models
         public bool OnPreparation { get; set; }
         public Customer Customer { get; set; }
 
-        //TODO: until Order detail lists are ready . 
-        //public ICollection<OrderDetail> OrderDetails { get; set; }
+        //TODO: create a testcontroller and test services with a DTO to post order details until actual controller , service available.
+        public ICollection<OrderDetail> OrderDetails { get; set; }
+
+        public decimal totalPrice { get; set; }
 
     }
 }
