@@ -20,7 +20,19 @@ namespace CodeBuddies_PizzaAPI
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins",
+                    policy =>
+                    {
+                        policy.WithOrigins("https://localhost:7210")
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
+
             builder.Services.AddScoped<IOrderServices , OrderService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             builder.Services.AddScoped<ITestOrderDetailServices, TestOrderDetailServices>();
 
@@ -39,7 +51,7 @@ namespace CodeBuddies_PizzaAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseCors("AllowSpecificOrigins");
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
