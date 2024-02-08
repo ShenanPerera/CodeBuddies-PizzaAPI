@@ -25,7 +25,7 @@ namespace CodeBuddies_PizzaAPI
                 options.AddPolicy("AllowSpecificOrigins",
                     policy =>
                     {
-                        policy.WithOrigins("https://localhost:7210")
+                        policy.WithOrigins("https://localhost:7018")
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
