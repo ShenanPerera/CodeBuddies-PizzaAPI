@@ -26,7 +26,7 @@ namespace CodeBuddies_PizzaAPI.Services
             var order = await _context.Orders.FindAsync(od.OrderID);
             if (order == null)
             {
-                throw new ArgumentException("The order ID does not match the order ID in the request body.");
+                throw new ArgumentException("The order ID does not match the order ID in the request body");
             }
 
             var product = await _context.Products.FindAsync(od.ProductID);
